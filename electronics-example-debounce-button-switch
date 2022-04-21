@@ -1,0 +1,14 @@
+#!/bin/bash
+
+cat <<EOT
+
+    .---||--.----- gpio with input_pullup
+    | .1uf  |
+    |       <
+    |    r2 > 1k
+    |       |
+  .-+--/ ---'
+  |   sw
+ ---
+ gnd
+EOT

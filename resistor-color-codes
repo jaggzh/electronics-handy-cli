@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+# Outputs a 24-bit color (r,g,b) table of resistor information
+# (Requires a terminal supporting 24 bit colors)
+# https://gist.github.com/7928e4f3797b421a68fbffd780018727
+# jaggz.h over at gmail
+use Text::Table;
+use utf8;
+
+my $tb = Text::Table->new(qw/Color Digit Multiplier Tolerance/);
+$tb->load(
+ [ fbstr(255,255,255,  2,  2,  2,'Black'),    0, '1',          '' ],
+ [ fbstr(255,255,255,150, 32, 32,'Brown'),    1, '10',         '± 1%' ],
+ [ fbstr(255,255,255,255,  0,  0,'Red'),      2, '100',        '± 2%' ],
+ [ fbstr(  0,  0,  0,255,160,  0,'Orange'),   3, '1,000',      '' ],
+ [ fbstr(  0,  0,  0,255,255,  0,'Yellow'),   4, '10,000',     '' ],
+ [ fbstr(  0,  0,  0,  0,176, 60,'Green'),    5, '100,000',    '± 0.5%' ],
+ [ fbstr(255,255,255,  0,112,192,'Blue'),     6, '1,000,000',  '± .25%' ],
+ [ fbstr(255,255,255,255,  0,255,'Violet'),   7, '10,000,000', '± .1%' ],
+ [ fbstr(255,255,255,115,115,115,'Grey'),     8, '',           '± .05%' ],
+ [ fbstr(  0,  0,  0,255,255,255,'White'),    9, '',           '' ],
+ [ fbstr(  0,  0,  0,225,215,  0,'Gold'),    '', '.1',         '± 5%' ],
+ [ fbstr(  0,  0,  0,177,177,177,'Silver'),  '', '.01',        '± 10%' ],
+ [ fbstr(127,127,127,  0,  0,  0,'None'),    '', '',           '± 20%' ],
+);
+print "\n";
+print $tb;
+print "\n";
+
+sub a24fg { "\033[38;2;$_[0];$_[1];$_[2]m"; }
+sub a24bg { "\033[48;2;$_[0];$_[1];$_[2]m"; }
+sub fbstr { # Output rgb of foreground, bg, and a string
+	my ($fr,$fg,$fb,$br,$bg,$bb,$col) = @_;
+	my $s = sprintf("%s%s %-6s \033[m",
+		a24bg($br,$bg,$bb),
+		a24fg($fr,$fg,$fb),
+		$col);
+	return $s;
+}
