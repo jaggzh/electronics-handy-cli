@@ -1,0 +1,35 @@
+#!/bin/bash
+
+cat <<'EOT'
+Capacitive sensor unit with Active Shield (Driven Shield)
+ (Simple OPAMP with QTouch SNSK and SNS lines)
+
+From:
+Atmel QTAN0087 Proximity Design Guide
+https://ww1.microchip.com/downloads/en/Appnotes/doc10760.pdf
+
+Figure 6-3. QTouch-based driven shield
+
+*-----------* SNSK                 Rsns
+|           |-------*---------*-----\/\/----------[Electrode]
+|           |       |         |
+| QT Device |      --- Cs     |            *----[Driven Shield]
+| (any)     |      ---        |  .\ |      |
+|           | SNS   |         |  | \|      |
+|           |-------*         *--|+ \  r   |
+*-----------*                    |   \_____|
+                                 |   /     |
+                              *--|- / IC   |
+                              |  | /|      | Unity Gain
+                              |  '/ |      | Buffer
+                              |            |
+                              *------------*
+
+"This circuit may also be used for QTouchADC, the only difference in the
+circuit would be Cs – it is not required when using QTouchADC."
+
+For long leads (ex. 1.2m), coax cable shielding attached to driven shield,
+with electrode lead on center conductor 
+
+
+EOT
