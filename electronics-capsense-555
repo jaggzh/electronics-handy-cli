@@ -1,0 +1,43 @@
+#!/bin/bash
+
+cat <<EOT
+Capacitive sensor unit with Active Shield (Driven Shield)
+ (Frequency output method)
+
+
+                     +5
+          r2 2.2k    |
+        .-\/\/-------*---*    Frequency
+        |            |   |    output         r5 10k
+        |           4|  8|      *        *----/\/\---------*
+        |       7,---*---*--.   |        |                 |
+        *--------|          |   |        |       +5        |
+        |        |          |   |        |    .\ *         |
+    r1  \       6|   IC1    |3  |        |    | \|         |
+   220k /    *---|   555    *---*        *----|- \  r6 47  |
+        \    |   |          |                 |   \__/\/\--*-----* Driven
+        |    |  2|          |       r3 10k    |   /                shield
+        *----*---*          |     *--/\/\--*---+ / IC2 = TLV2461
+        |    |   |          |     |        |  | /|
+  c1   ---   |   `-----*----'     |     r4 \  '/ *-------------* Gnd
+ 220pf ( )   |         |          |     1M /     |
+        |    |        _|_         |        \     |
+        |    |         =          |       _|_   _|_
+       _|_   |                    |        =     =
+    Gnd =    |                    |                            Cap sense
+             *--------------------*--------------------------* plate
+
+From:
+https://www.electronicdesign.com/technologies/analog/article/21799482/driven-shield-enables-largearea-capacitive-sensor
+
+1. In this large-area capacitive sensor, C1 and any parallel capacitance set
+the frequency of the 555 astable multivibrator IC1, while IC2 buffers the
+voltage at the capacitor to drive the shield plate. (The pin-outs for IC1 are
+for the 'N' package.)
+
+For IC2, resistors R3 and R4 decrease the buffered voltage by about 1%. This
+prevents oscillation that may occur because of the external capacitance. R6 is
+included since some operational amplifiers have difficulty driving a capacitive
+load. IC2 should have a high gain-bandwidth product to allow a faithful
+representation of the signal voltage without phase shift.
+EOT
