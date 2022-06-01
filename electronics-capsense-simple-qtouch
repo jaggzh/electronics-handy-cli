@@ -26,10 +26,23 @@ Figure 6-3. QTouch-based driven shield
                               *------------*
 
 "This circuit may also be used for QTouchADC, the only difference in the
-circuit would be Cs – it is not required when using QTouchADC."
+circuit would be Cs – it is not required when using QTouchADC.
+...
+• QTouch requires two processor pins, one optional series resistor (used to
+reduce emissions conducted noise) and one capacitor per sensor
+• QTouchADC requires one processor pin and one optional resistor (used to
+reduce emissions and conducted noise) per sensor
 
-For long leads (ex. 1.2m), coax cable shielding attached to driven shield,
-with electrode lead on center conductor 
+QTouch proximity sensors are touch keys deliberately made over-sensitive. This can be
+accomplished using a combination of the following:
+• Make the sensing electrode larger
+• Increase the value of the sampling capacitor [33;1mCs[;m
+• Decrease the touch detection threshold
+• Reduce ground loading effects
+"
+
+For long leads (ex. 1.2m), coax cable can be used, with shielding attached to
+driven shield, with electrode lead on center conductor 
 
 
 EOT
