@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cat <<EOT
+cat <<'EOT'
 Capacitive sensor unit with Active Shield (Driven Shield)
  (Frequency output method)
 

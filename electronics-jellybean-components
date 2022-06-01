@@ -1,5 +1,5 @@
 #!/bin/bash
-cat <<EOT
+cat <<'EOT'
 == SMD ==
  Mosfets:
   bss138: N-Channel Logic Level Enhancement Mode Field Effect Transistor
