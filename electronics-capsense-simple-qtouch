@@ -16,10 +16,10 @@ Figure 6-3. QTouch-based driven shield
 | QT Device |      --- Cs     |            *----[Driven Shield]
 | (any)     |      ---        |  .\ |      |
 |           | SNS   |         |  | \|      |
-|           |-------*         *--|+ \  r   |
+|           |-------*         *--|+ \      |
 *-----------*                    |   \_____|
                                  |   /     |
-                              *--|- / IC   |
+                              *--|- /      |
                               |  | /|      | Unity Gain
                               |  '/ |      | Buffer
                               |            |
@@ -41,6 +41,7 @@ accomplished using a combination of the following:
 • Reduce ground loading effects
 "
 
+Higher [33;1mRsns[;m results in higher sensitivity sensor *I think*.
 For long leads (ex. 1.2m), coax cable can be used, with shielding attached to
 driven shield, with electrode lead on center conductor 
 
