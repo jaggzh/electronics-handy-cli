@@ -1,0 +1,26 @@
+#!/bin/bash
+cat <<EOT
+== SMD ==
+ Mosfets:
+  bss138: N-Channel Logic Level Enhancement Mode Field Effect Transistor
+          (Commonly used in level shifting)
+          .22A, 50V, Rds 3.5ohm, 
+  ao3400 and ao3401: Package(SOT23-3), N and P channel devices. High current.
+
+  Potentials, from:
+   https://hackaday.com/2016/12/13/ask-hackaday-dude-wheres-my-mosfet/: 
+   FQP30N06L: Package(TO-220): 60V LOGIC N-Channel MOSFET
+   NTD6416ANL [Obsolete?] (10A @ 3VDC?)
+    IRLML2502 N-channel equivalent to NTD6416ANL?
+   NTD6416ANL IRLB8743 (user used only at 5v, not 3v3)
+   AO3400: "Looking a little harder, they only want to push 200-300 mA DC at
+	3-5 V. But as long as I don’t stall out the motors (famous last words!)
+	everything should be fine ..." Id/Vds graph "Maximum Forward Biased Safe
+	Operating Area". "Looking a little harder, they only want to push 200-300
+	mA DC at 3-5 V. But as long as I don’t stall out the motors (famous last
+	words!) everything should be fine…"
+
+
+
+
+EOT
