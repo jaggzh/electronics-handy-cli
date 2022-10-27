@@ -1,0 +1,37 @@
+#!/bin/bash
+
+script=$(basename "$0")
+if [[ "$#" -lt 3 ]]; then
+	cat <<-EOT
+		Calculate Diode/LED needed resistance, and power use
+
+		Usage: $0 V Vf I
+		Where:  V is the supply voltage
+		        Vf is the diode (LED) forward voltage
+		        I is the desired current
+
+		Example: $0 12 3.2 0.300
+		Will output: 
+		           Supply voltage: 12 volts
+		    Diode forward voltage: 3.2 volts
+		          Desired current: .300 amps
+
+		    29.333333 ohms needed
+		    2.639999 W consumed (and needing dissipation)
+	EOT
+	exit
+fi
+
+vin="$1"  # ex. 12
+vf="$2"   #     3.2
+i="$3"    #     0.300
+
+#bc <<< 'vin=12;vf=3.2;i=0.300;vdrop=(vin-vf);r=vdrop/i;r; i*i*r'
+#bc <<< 'vin=12;vf=3.2;i=0.300;vdrop=(vin-vf);r=vdrop/i;print r," ohms needed\n"; print i*i*r," W consumed\n"'
+bccmd="scale=6; vin=$vin; vf=$vf; i=$i; vdrop=(vin-vf); r=vdrop/i;\
+ "'print "       Supply voltage: ", vin, " volts\n";
+   print "Diode forward voltage: ", vf, " volts\n";
+   print "      Desired current: ", i, " amps\n\n";
+   print r," ohms needed\n"; print i*i*r," W consumed (and needing dissipation)\n"'
+
+bc <<<"$bccmd"
