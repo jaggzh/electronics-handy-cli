@@ -5,12 +5,12 @@ if [[ "$#" -lt 3 ]]; then
 	cat <<-EOT
 		Calculate Diode/LED needed resistance, and power use
 
-		Usage: $0 V Vf I
+		Usage: $script V Vf I
 		Where:  V is the supply voltage
 		        Vf is the diode (LED) forward voltage
 		        I is the desired current
 
-		Example: $0 12 3.2 0.300
+		Example: $script 12 3.2 0.300
 		Will output: 
 		           Supply voltage: 12 volts
 		    Diode forward voltage: 3.2 volts
