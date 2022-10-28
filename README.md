@@ -10,6 +10,8 @@ By jaggz.h who is at gmail
 ![Screenshot: Resistor color codes](i/ss--resistor-color-codes.png "Screenshot of resistor-color-codes command output")
 * electronics-example-debounce-button-switch
 ![Screenshot: Debounce example](i/ss--electronics-example-debounce-button-switch.png "Screenshot of debounce text schematic output")
+* electronics-led-r-and-w
+![Screenshot: LED/Diode Resistor/Power Calculation](i/ss--electronics-led-r-and-w.png "Screenshot of LED/Diode Resistor calculator")
 
 # Installation / Requirements
 
