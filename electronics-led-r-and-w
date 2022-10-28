@@ -1,16 +1,20 @@
-#!/bin/bash
+#!/usr/bin/perl
+use v5.26;
+use warnings;
+use File::Basename;
+use Math::Round;
 
-script=$(basename "$0")
-if [[ "$#" -lt 3 ]]; then
-	cat <<-EOT
-		Calculate Diode/LED needed resistance, and power use
+my $scriptname=basename $0;
+sub usage {
+	print <<~"EOT";
+		Calculate Diode/LED needed resistance and power use
 
-		Usage: $script V Vf I
+		Usage: $scriptname V Vf I
 		Where:  V is the supply voltage
 		        Vf is the diode (LED) forward voltage
 		        I is the desired current
 
-		Example: $script 12 3.2 0.300
+		Example: $scriptname 12 3.2 0.300
 		Will output: 
 		           Supply voltage: 12 volts
 		    Diode forward voltage: 3.2 volts
@@ -18,20 +22,123 @@ if [[ "$#" -lt 3 ]]; then
 
 		    29.333333 ohms needed
 		    2.639999 W consumed (and needing dissipation)
-	EOT
-	exit
-fi
+		EOT
+}
 
-vin="$1"  # ex. 12
-vf="$2"   #     3.2
-i="$3"    #     0.300
+if (@ARGV < 3) {
+	say STDERR "\nMissing values on commandline!\n";
+	usage();
+	exit;
+}
 
-#bc <<< 'vin=12;vf=3.2;i=0.300;vdrop=(vin-vf);r=vdrop/i;r; i*i*r'
+my $vin=$ARGV[0];  # ex. 12
+my $vf=$ARGV[1];   #     3.2
+my $i=$ARGV[2];    #     0.300
+
+# The series values are calculated with round(10^n)^(1/m))
+# Where m is the series and n is 0-(series-1)
+# For example (from wikipedia):
+#    To calculate the E48 series: m m is 48, then
+#       n is incremented from 0 to 47 through the formula.
+# HOWEVER, there are a whole 1 or more exceptions, so I just used wiki's tables
+# ALSO, higher series nowadays sometimes include common lower-series values
+#   for manufacture/design portability between series.
+#   ^^^^^^ this is NOT accounted for by this script (at the time of this writing)
+# (tol)erance
+# (sig)nificant digits in value
+# (vals): resistance values
+my %series_sets = (
+	"e12" => {
+		"tol" => "10",
+		"sig" => 2,       # Significant figures
+		"vals" => [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2],
+	},
+	"e24" => {
+		"tol" => "5",
+		"vals" => [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1],
+	},
+	"e48" => {
+		"tol" => "2",
+		"vals" => [1.00, 1.05, 1.10, 1.15, 1.21, 1.27, 1.33, 1.40, 1.47, 1.54, 1.62, 1.69, 1.78, 1.87, 1.96, 2.05, 2.15, 2.26, 2.37, 2.49, 2.61, 2.74, 2.87, 3.01, 3.16, 3.32, 3.48, 3.65, 3.83, 4.02, 4.22, 4.42, 4.64, 4.87, 5.11, 5.36, 5.62, 5.90, 6.19, 6.49, 6.81, 7.15, 7.50, 7.87, 8.25, 8.66, 9.09, 9.53],
+	},
+);
+
+sub rwv_from_ivinvf {
+	# Resistance, watts, vdrop, from current, Vin, Vforward
+	my ($i, $vin, $vf) = @_;
+	my $vdrop = $vin-$vf;
+	my $r     = $vdrop/$i;
+	my $w     = $i*$i*$r;
+	return ($r, $w, $vdrop);
+}
+sub iw_from_rvinvf {
+	# Current and watts given Resistance, Vin, and Vforward
+	my ($r, $vin, $vf) = @_;
+	my $vdrop = $vin-$vf;
+	# say "vin:$vin, vdrop: $vdrop, r:$r";
+	my $i = ($vdrop)/$r;
+	my $w = $i*$i*$r;
+	return ($i, $w);
+}
+
+sub rnearest_higher_from_series_r {
+	# Find nearest resistance value in series given resistance
+	my ($series, $r) = @_;
+	my %serinfo = %{$series_sets{$series} // die "Invalid series: $series"};
+	my $found=0;
+	my $mult;
+	say "Using series: ", lc($series);
+	say "   Tolerance: $serinfo{tol}";
+	my @vals = @{$serinfo{vals}};
+	my $i;
+	my @mults = (10, 10e2, 10e3, 10e4, 10e5, 10e6);
+	say "Series ($series) values:";
+	say "  ", map {"$_ ";} @vals;
+	# for $mult (@mults) { say "  ", join(", ", map { $_*$mult } @vals); }
+	for (@mults) {
+		$mult = $_;
+		for (0 .. $#vals) {
+			$i = $_;
+			# say " Testing $r against ", ($vals[$i]*$mult), " ($vals[$i] * $mult)";
+			if ($vals[$i]*$mult > $r) { $found=1; }
+			last if $found;
+		}
+		last if $found;
+	}
+	die "Unfound or bad resistance value ($r) in series $series"
+		if !$found || $i == 0;
+	# $i--;
+	my $val = $vals[$i] * $mult;
+	say "  Nearest series $series value ($vals[$i] * $mult): $val";
+	return $val;
+}
+
+
+# bc versions:
 #bc <<< 'vin=12;vf=3.2;i=0.300;vdrop=(vin-vf);r=vdrop/i;print r," ohms needed\n"; print i*i*r," W consumed\n"'
-bccmd="scale=6; vin=$vin; vf=$vf; i=$i; vdrop=(vin-vf); r=vdrop/i;\
- "'print "       Supply voltage: ", vin, " volts\n";
-   print "Diode forward voltage: ", vf, " volts\n";
-   print "      Desired current: ", i, " amps\n\n";
-   print r," ohms needed\n"; print i*i*r," W consumed (and needing dissipation)\n"'
 
-bc <<<"$bccmd"
+my ($r, $w, $vdrop) = rwv_from_ivinvf($i, $vin, $vf);
+say "       Supply voltage: $vin volts";
+say "Diode forward voltage: $vf volts";
+say "      Desired current: $i amps";
+say "";
+printf "%.7f ohms needed\n", $r;
+say "$w W consumed (and needing dissipation)";
+
+my $series = 'e24';
+
+say '';
+my $rnew = rnearest_higher_from_series_r($series, $r);
+my ($inew, $wnew) = iw_from_rvinvf($rnew, $vin, $vf);
+$inew = round(($inew*10e7))/10e7;
+$wnew = round(($wnew*10e7))/10e7;
+say <<~"EOT";
+
+	Nearest in series:
+	        Vin: $vin
+	         Vf: $vf
+	     Series: $series
+	   Resistor: $rnew ohms
+	    Current: $inew amps
+	      Power: $wnew watts
+	EOT
