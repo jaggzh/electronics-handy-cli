@@ -1,0 +1,91 @@
+#!/usr/bin/perl
+use v5.24; use strict; use warnings;
+use bansi; # Used for colors (whi, rst, etc. yel, bmag, bgmag (background))
+
+# Todo:
+# * Add additional units if needed to usage() and our support
+# * If frequency given in a hz unit convert to needed wavelength first
+# * Perform calc() which evaluates number, units, and calculation
+#   (Which I believe is (1240/nm)
+# * Output result to user
+
+sub usage {
+	print <<~"EOT";
+
+		${whi}Shows voltage needed for producing light at a given wavelength$rst
+		led-volts-nm [#]                - Plain number taken as nm
+		led-volts-nm [#[nm,um,mm,m,km]] - Units provided
+		led-volts-nm [#[M,k]hz]         - User provides frequency
+		led-volts-nm -e                 - Give explanation
+		led-volts-nm -E                 - Give explanation without utf8
+		
+		Options:
+		  -e - Output explanation/derivation
+		EOT
+}
+
+our $sym_lambda = 'λ';
+our $sym_nu = 'ν';
+our $sym_e = 'E';
+our $sym_h = 'h';
+our $sym_c = 'c';
+
+# Subroutine to switch symbols to ASCII
+sub syms_to_ascii {
+	$sym_lambda = 'lambda';
+	$sym_nu = 'nu';
+	$sym_e = 'E';
+	$sym_h = 'h';
+	$sym_c = 'c';
+}
+
+sub str_help { # String of full explanation
+	my $sect = "$bgblu$whi";  # Section headings
+	my $nums = "$yel";        # Numbers
+	my $sym = "$bcya";        # Symbols
+	my $equ = "$whi";         # Equations
+	my $unit = "$bmag";       # Units
+	return <<~"END_HELP";
+
+		${sect} The Planck-Einstein Relation ${rst}
+		The energy ($equ$sym_e$rst) of a photon is given by the Planck-Einstein relation:
+		   $equ$sym_e = $sym_h * $sym_nu$rst
+		where $equ$sym_h$rst is Planck's constant (${nums}6.626 x 10^-34 ${unit}Js$rst)
+		and $equ$sym_nu$rst is the frequency of the photon.
+
+		The frequency ($sym$sym_nu$rst) can be related to the wavelength ($sym$sym_lambda$rst)
+		by the speed of light ($sym$sym_c$rst): $equ$sym_nu = $sym_c / $sym_lambda$rst
+
+		Therefore, the energy of a photon can also be written as: $equ$sym_e = ($sym_h * $sym_c) / $sym_lambda$rst
+
+		${sect} Conversion to Electron Volts ${rst}
+		The energy calculated from the Planck-Einstein relation is in joules ($equ${unit}J$rst)
+		when using SI units. However, it is often more convenient to express
+		photon energy in electron volts (${unit}eV$rst).
+
+		${sect} The Simplified Formula ${rst}
+		By substituting $sym$sym_h$rst, $sym$sym_c$rst, and the conversion factor from joules to electron volts
+		into the equation, and setting $sym$sym_lambda$rst in nanometers (${unit}nm$rst) for practical use, we
+		derive a simplified formula: $equ$sym_e (eV) = 1240 / $sym_lambda (nm)$rst
+
+		${sect} Application to LEDs ${rst}
+		For LEDs and other semiconductor devices, the energy calculated by this
+		formula represents the photon energy corresponding to the band gap of
+		the material, which determines the color (wavelength) of the light emitted.
+
+		END_HELP
+}
+
+sub calc {
+	my $us=$_[0]; # User-provided string (number or number with units)
+}
+
+if (@ARGV<1 || grep {/^-(h|-help)$/} @ARGV) { usage(); exit; }
+if (grep {/^-E$/} @ARGV) { syms_to_ascii(); }
+if (grep {/^-e$/i} @ARGV) {
+	print str_help();
+} else {
+	my $s = shift @ARGV;
+	calc($s);
+}
+
