@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 use v5.36;
 use Getopt::Lucid qw(:all);
-use bansi;  # Custom coloring library for terminal output
+my $ourdir=$FindBin::RealBin;
+use ansib;  # Custom coloring library for terminal output
 use utf8;
+use FindBin;
+
+use lib $ourdir;
 
 my $aval=$bcya;
 my $asym=$gra;
@@ -16,22 +20,22 @@ binmode *STDOUT, "encoding(utf-8)";
 # Define command-line specifications
 my $argslen = @ARGV;
 my @specs = (
-    Param("r1|r")->default(undef)
-                  ->valid(qr/^\d+(\.\d+)?[kKmM]?[ohmOHM]{0,3}$/)
-                  ->doc("Specify R1 resistance in Ohms, kilohms (e.g., 10k or 10kohm), or megaohms (e.g., 1M or 1Mohm)"),
-    Param("r2")->default(undef)
-                ->valid(qr/^\d+(\.\d+)?[kKmM]?[ohmOHM]{0,3}$/)
-                ->doc("Specify R2 resistance"),
-    Param("vin|v")->default(undef)
-                   ->valid(qr/^\d+(\.\d+)?[vV]$/)
-                   ->doc("Specify the input voltage (Vin) in volts (e.g., 5V)"),
-    Switch("quiet|q")
-          ->doc("Quiet normal output (only output calculated value(s))"),
-    Switch("ratio")
-          ->doc("Calculate and return the resistance ratio R2/(R1+R2) only"),
-    Switch("help|h")
-          ->anycase()
-          ->doc("Display this help message and exit"),
+	Param("r1|r")->default(undef)
+				  ->valid(qr/^\d+(\.\d+)?[kKmM]?[ohmOHM]{0,3}$/)
+				  ->doc("Specify R1 resistance in Ohms, kilohms (e.g., 10k or 10kohm), or megaohms (e.g., 1M or 1Mohm)"),
+	Param("r2")->default(undef)
+				->valid(qr/^\d+(\.\d+)?[kKmM]?[ohmOHM]{0,3}$/)
+				->doc("Specify R2 resistance"),
+	Param("vin|v")->default(undef)
+				   ->valid(qr/^\d+(\.\d+)?[vV]$/)
+				   ->doc("Specify the input voltage (Vin) in volts (e.g., 5V)"),
+	Switch("quiet|q")
+		  ->doc("Quiet normal output (only output calculated value(s))"),
+	Switch("ratio")
+		  ->doc("Calculate and return the resistance ratio R2/(R1+R2) only"),
+	Switch("help|h")
+		  ->anycase()
+		  ->doc("Display this help message and exit"),
 );
 
 # Create the option parser and parse command line
@@ -39,53 +43,53 @@ my $opt = Getopt::Lucid->getopt(\@specs)->validate;
 
 sub print_eqns {
 	say <<~"EOT";
-    	$bgblu$yel---- ${whi}Voltage Divider Equations: $yel----${rst}
-    	${bcya}Basic Voltage Divider Formula:${rst}
-    	  Vout = Vin × (R2 / (R1 + R2))\n
-    	${bgre}Where:${rst}
-    	  ${bblu}Vout${rst} - Output voltage across R2
-    	  ${bblu}Vin${rst}  - Input voltage to the circuit
-    	  ${bblu}R1${rst}   - Resistance of the first resistor connected to Vin
-    	  ${bblu}R2${rst}   - Resistance of the second resistor connected to ground\n
-    	${bgre}Usage Examples:${rst}
-    	  Calculate Vout given R1, R2, and Vin:
-    	    $0 --r1 10k --r2 5k --vin 12V
-    	  Calculate the ratio R2/(R1 + R2):
-    	    $0 --r1 10k --r2 5k --ratio
-    	
-    	EOT
+		$bgblu$yel---- ${whi}Voltage Divider Equations: $yel----${rst}
+		${bcya}Basic Voltage Divider Formula:${rst}
+		  Vout = Vin × (R2 / (R1 + R2))\n
+		${bgre}Where:${rst}
+		  ${bblu}Vout${rst} - Output voltage across R2
+		  ${bblu}Vin${rst}  - Input voltage to the circuit
+		  ${bblu}R1${rst}   - Resistance of the first resistor connected to Vin
+		  ${bblu}R2${rst}   - Resistance of the second resistor connected to ground\n
+		${bgre}Usage Examples:${rst}
+		  Calculate Vout given R1, R2, and Vin:
+			$0 --r1 10k --r2 5k --vin 12V
+		  Calculate the ratio R2/(R1 + R2):
+			$0 --r1 10k --r2 5k --ratio
+		
+		EOT
 }
 
 # Display help if requested
 if ($opt->get_help || $argslen < 1) {
 	say '';
 	print_eqns();
-    print $opt->usage();
+	print $opt->usage();
 	say '';
-    exit;
+	exit;
 }
 
 # Function to parse resistance values
 sub parse_resistance {
-    my $res = shift;
-    if ($res =~ /^(\d+(\.\d+)?)([kmKM]?)(ohm)?$/i) {
-        my $value = $1;
-        my $unit = lc $3;
-        $value *= 1000 if $unit eq 'k';
-        $value *= 1000000 if $unit eq 'm';
-        return $value;
-    }
-    die "${bgred}Error:${rst} Invalid resistance value '$res'\n";
+	my $res = shift;
+	if ($res =~ /^(\d+(\.\d+)?)([kmKM]?)(ohm)?$/i) {
+		my $value = $1;
+		my $unit = lc $3;
+		$value *= 1000 if $unit eq 'k';
+		$value *= 1000000 if $unit eq 'm';
+		return $value;
+	}
+	die "${bgred}Error:${rst} Invalid resistance value '$res'\n";
 }
 
 # Function to calculate output voltage
 sub calculate_vout {
-    my ($r1, $r2, $vin) = @_;
-    $r1 = parse_resistance($r1);
-    $r2 = parse_resistance($r2);
-    $vin =~ s/[vV]$//;  # Remove the 'V' from voltage input
-    say "$aval${vin}$symv $amath* ($aval${r2}$symohm$amath / ($amath$aval${r1}$symohm $amath+ $aval${r2}$symohm$amath))" if ! $opt->get_quiet;
-    return $vin * ($r2 / ($r1 + $r2));
+	my ($r1, $r2, $vin) = @_;
+	$r1 = parse_resistance($r1);
+	$r2 = parse_resistance($r2);
+	$vin =~ s/[vV]$//;  # Remove the 'V' from voltage input
+	say "$aval${vin}$symv $amath* ($aval${r2}$symohm$amath / ($amath$aval${r1}$symohm $amath+ $aval${r2}$symohm$amath))" if ! $opt->get_quiet;
+	return $vin * ($r2 / ($r1 + $r2));
 }
 
 sub parse_shorthand_args {
@@ -93,10 +97,10 @@ sub parse_shorthand_args {
 		say STDERR "${bred}Shorthand use requires r1 r2 Vin. See -h for help.";
 		exit 1;
 	} else {
-        my ($r1, $r2, $vin) = @ARGV;
-        $opt->set_r1($r1);
-        $opt->set_r2($r2);
-        $opt->set_vin($vin);
+		my ($r1, $r2, $vin) = @ARGV;
+		$opt->set_r1($r1);
+		$opt->set_r2($r2);
+		$opt->set_vin($vin);
 	}
 }
 
@@ -106,21 +110,21 @@ if (@ARGV) {
 
 # Execute calculations based on provided options
 if ($opt->get_vin && $opt->get_r1 && $opt->get_r2 && !$opt->get_ratio) {
-    my $vout = calculate_vout($opt->get_r1, $opt->get_r2, $opt->get_vin);
-    if (! $opt->get_quiet) {
+	my $vout = calculate_vout($opt->get_r1, $opt->get_r2, $opt->get_vin);
+	if (! $opt->get_quiet) {
 		printf "Output Voltage (Vout): ${bgre}%.2f$symv$rst\n", $vout;
 	} else {
 		printf "%.2fV\n", $vout;
 	}
 } elsif ($opt->get_ratio) {
-    my $r1 = parse_resistance($opt->get_r1);
-    my $r2 = parse_resistance($opt->get_r2);
-    my $ratio = $r2 / ($r1 + $r2);
-    if (! $opt->get_quiet) {
+	my $r1 = parse_resistance($opt->get_r1);
+	my $r2 = parse_resistance($opt->get_r2);
+	my $ratio = $r2 / ($r1 + $r2);
+	if (! $opt->get_quiet) {
 		printf "Resistance Ratio (R2/(R1+R2)): ${bcya}%.4f${rst}\n", $ratio;
 	} else {
 		printf "%.4f\n", $ratio;
 	}
 } else {
-    print $opt->usage();
+	print $opt->usage();
 }
