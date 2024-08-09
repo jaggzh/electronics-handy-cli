@@ -1,0 +1,24 @@
+#!/bin/bash
+
+cat <<'EOT'
+Color    Sonoff S31  FTDI USB Adapter
+Brown    VCC         VCC
+Red      RX          TX
+Orange   TX          RX
+Yellow   GND         GND
+
+.----------------------------.
+|          o  o  o  o  o  o  |
+|          G       Tx Rx Vcc |
+|                            |
+|                            |
+|                            |
+
+
+USB Serial Adapter:
+|                    |
+|                    |
+|__.__.__.__.__.__.__|
+   |  |  |  |  |  |
+ dtr rx tx v+ cts g
+EOT
