@@ -1,6 +1,10 @@
 #!/bin/bash
 
 cat <<'EOT'
+In linux:
+  modprobe ftdi_sio
+  (and maybe: modprobe usbserial)
+
 (My wire coloring. Choose your own.)
 Probe Color  Wire Color  Sonoff S31  FTDI USB Adapter
 Yellow       Blue        TX          RX
