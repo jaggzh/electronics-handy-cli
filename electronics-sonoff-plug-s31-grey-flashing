@@ -1,18 +1,21 @@
 #!/bin/bash
 
 cat <<'EOT'
-Color    Sonoff S31  FTDI USB Adapter
-Brown    VCC         VCC
-Red      RX          TX
-Orange   TX          RX
-Yellow   GND         GND
+(My wire coloring. Choose your own.)
+Probe Color  Wire Color  Sonoff S31  FTDI USB Adapter
+Yellow       Blue        TX          RX
+Green        Brown       RX          TX
+Blue         Red         VCC         VCC
+Yellow       Yellow      GND         GND
 
-.----------------------------.
-|          o  o  o  o  o  o  |
-|          G       Tx Rx Vcc |
-|                            |
-|                            |
-|                            |
+               Hook/Wire Color
+               Y/Y        Y/B G/Br  Bl/R
+.---------------------------------------.
+|               o   o   o   o   o   o   |
+|               G           Tx  Rx  Vcc |
+|                                       |
+|           Sonoff Daughterboard        |
+|                                       |
 
 
 USB Serial Adapter:
@@ -21,4 +24,6 @@ USB Serial Adapter:
 |__.__.__.__.__.__.__|
    |  |  |  |  |  |
  dtr rx tx v+ cts g
+ 
+     
 EOT
