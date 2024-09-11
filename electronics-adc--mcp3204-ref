@@ -1,0 +1,36 @@
+#!/usr/bin/env -S display_file_shell -l bash
+
+                  MCP3208 (SOIC-16)
+                   +-------+
+              CH0 -| 1  16 |-- VDD
+              CH1 -| 2  15 |-- VREF
+              CH2 -| 3  14 |-- AGND
+              CH3 -| 4  13 |-- CLK
+              CH4 -| 5  12 |-- DOUT
+              CH5 -| 6  11 |-- DIN
+              CH6 -| 7  10 |-- CS/SHDN 
+              CH7 -| 8   9 |-- DGND
+                   +-------+
+
+ ESP32 (3.3V) Connections:
+
+ * VDD (MCP3208 pin 16):     Connect to ESP32 3.3V
+ * VREF (MCP3208 pin 15):    Connect to ESP32 3.3V
+ * AGND (MCP3208 pin 14):    Connect to ESP32 GND
+ * DGND (MCP3208 pin 9):     Connect to ESP32 GND
+ * CLK (MCP3208 pin 13):     Connect to ESP32 GPIO27
+ * DOUT (MCP3208 pin 12):    Connect to ESP32 GPIO33
+ * DIN (MCP3208 pin 11):     Connect to ESP32 GPIO32
+ * CS/SHDN (MCP3208 pin 10): Connect to ESP32 GPIO25
+
+Important Notes:
+    Power Supply: The MCP3204 operates from 2.7V to 5.5V. The ESP32's 3.3V supply is within this range.
+    Reference Voltage: Connect VREF to the same voltage as VDD for a full-scale analog input range of 0V to VDD.
+    SPI Communication:
+        The ESP32 will be the SPI master and the MCP3204 the slave.
+        You'll need to configure the ESP32's SPI peripheral for the correct mode (Mode 0,0 or Mode 1,1).
+        Refer to the MCP3204 datasheet and the ESP32 documentation for SPI configuration details.
+    Chip Select (CS/SHDN): This pin must be pulled high between conversions to put the MCP3204 into low-power standby mode.
+    Level Shifting: If your analog sensors output a voltage higher than 3.3V, you may need to use voltage dividers to scale the signals down to the acceptable range for the MCP3204.
+
+# vi: et sw=1 ts=1
