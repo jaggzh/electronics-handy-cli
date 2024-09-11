@@ -1,0 +1,27 @@
+#!/usr/bin/env -S display_file_shell -l markdown
+- A. NOT vailable in Arduino2 IDE (2024/09)
+- x. Not common (in my opinion)
+110 A
+300
+600
+750 x
+1200
+2400
+4800
+9600
+14400 A
+19200
+31250 x
+38400
+57600
+74880
+115200
+128000 Ax
+230400
+250000
+256000 x
+460800
+500000
+921600
+1000000
+2000000
