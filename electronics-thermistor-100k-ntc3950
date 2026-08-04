@@ -155,24 +155,24 @@ sub f_to_c {
 }
 
 sub resistance_from_temp {
-    my ($temp, $unit) = @_;
-    $temp = ($temp - 32) * 5/9 if lc($unit) eq 'f'; # Convert Fahrenheit to Celsius
+	my ($temp, $unit) = @_;
+	$temp = ($temp - 32) * 5/9 if lc($unit) eq 'f'; # Convert Fahrenheit to Celsius
 
-    my $prevtemp = (sort {$a <=> $b} keys %data)[0];  # Start with the lowest temperature
-    foreach my $curtemp (sort {$a <=> $b} keys %data) {
+	my $prevtemp = (sort {$a <=> $b} keys %data)[0];  # Start with the lowest temperature
+	foreach my $curtemp (sort {$a <=> $b} keys %data) {
 		if ($verbose) {
 			say "Scanning C $curtemp < C: $temp";
-			say "     (Row is: ", join(', ', @{$data{$curtemp}});
+			say "      (Row is: ", join(', ', @{$data{$curtemp}});
 		}
-        if ($temp <= $curtemp) {
+		if ($temp <= $curtemp) {
 			if ($verbose) {
 				say "Interpolating between: $prevtemp, $temp, and $curtemp:";
 			}
-            my ($rmax, $rnor, $rmin) = interpolate_kohms($temp, $prevtemp, $curtemp);
-            return ($rmax, $rnor, $rmin);
-        }
-        $prevtemp = $curtemp;
-    }
+			my ($rmax, $rnor, $rmin) = interpolate_kohms($temp, $prevtemp, $curtemp);
+			return ($rmax, $rnor, $rmin);
+		}
+		$prevtemp = $curtemp;
+	}
 }
 
 sub output {
@@ -183,7 +183,7 @@ sub output {
 			say "Scanning R $data{$temp}[1] < R: $r";
 			say "     (Row is: ", join(', ', @{$data{$temp}});
 		}
-		
+
 		if ($r >= $data{$temp}->[1]) {
 			say '';
 			printf "Requested resistance: $bmag%.2f kOhm$rst\n", $r;
@@ -193,7 +193,7 @@ sub output {
 				join(', ', @{$data{$previous_temp}});
 			say "        Next row ${temp}${deg}C ",
 				join(', ', @{$data{$temp}});
-			
+
 			my ($max, $nor, $min) = interpolate_temps($r, $previous_temp, $temp);
 
 			say '';

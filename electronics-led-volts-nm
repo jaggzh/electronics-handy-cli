@@ -18,7 +18,7 @@ sub usage {
 		led-volts-nm [#[M,k]hz]         - User provides frequency
 		led-volts-nm -e                 - Give explanation
 		led-volts-nm -E                 - Give explanation without utf8
-		
+
 		Options:
 		  -e - Output explanation/derivation
 		  -E - Output explanation without utf8

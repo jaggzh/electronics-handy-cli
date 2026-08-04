@@ -81,24 +81,24 @@ sub usage {
         Usage: $scriptname [resistor series]
         Available Series: $series_list
         Example: $scriptname e24
-        
+
         This will display the tolerance, significant figures, and standard resistor values for the specified series.
-        
+
         Series Descriptions:
     EOT
-    
+
     foreach my $series (sort keys %series_sets) {
         my $nvals = scalar @{$series_sets{$series}{vals}};
         my $desc = $series_sets{$series}{desc};
         my @vals = @{$series_sets{$series}{vals}};
-        
+
         # Get the first 3 and last 3 values
         my @first_vals = @vals[0..2];
         my @last_vals = @vals[-3..-1];
-        
+
         # Format the first and last values for display
         my $vals_preview = join(", ", @first_vals) . " ... " . join(", ", @last_vals);
-        
+
         say "$bmag$series$rst ($nvals values)";
         say "  $desc";
         say "  $vals_preview";
