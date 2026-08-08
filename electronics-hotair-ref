@@ -1,0 +1,353 @@
+#!/bin/bash
+#
+# Practical hot-air / PCB thermal reference.
+# Uses your ansi.sh variable names if available:
+#   $red $gre $gra $yel $whi
+#   $bred $bgre $bgra $byel $bwhi
+#   $bgred $bgbro ...
+#   $rst
+#
+# If ansi.sh is missing, it falls back to plain text.
+#
+# Usage:
+#   ./hotair_ref.sh
+#   ./hotair_ref.sh blind
+#   ./hotair_ref.sh theory
+#   ./hotair_ref.sh tasks
+#   ./hotair_ref.sh solders
+#   ./hotair_ref.sh notes
+
+# shellcheck disable=SC1091
+. ansi.sh
+#which ansi.sh && . ansi.sh # Colors
+
+: "${red:=}";  : "${gre:=}";  : "${gra:=}";  : "${yel:=}";  : "${whi:=}"
+: "${bred:=}"; : "${bgre:=}"; : "${bgra:=}"; : "${byel:=}"; : "${bwhi:=}"
+: "${rst:=}"
+
+a_secbg="$bgbluk"
+say()  { printf "%b\n" "$*"; }
+hdr()  { say "$a_secbg$gra┊ $byel$*${rst}"; }
+sec()  { say "${byel}$*${rst}"; }
+good() { say "${bgre}$*${rst}"; }
+warn() { say "${bred}$*${rst}"; }
+mut()  { say "${gra}$*${rst}"; }
+
+line() {
+	#echo "${gra}------------------------------------------------------------------${rst}"
+	echo "${gra}┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈${rst}"
+}
+linetop() {
+	echo "${gra}┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈${rst}"
+}
+linebot() {
+	echo "${gra}└┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈${rst}"
+}
+
+section_header() {
+	echo -n "$a_secbg$whi"
+    linetop
+    hdr " $1     "
+	echo -n "$a_secbg$whi"
+    linebot
+}
+
+show_intro() {
+    section_header "HOT AIR / PCB THERMAL QUICK REFERENCE"
+
+    say "${whi}This is a field-expedient cheat sheet, not gospel.${rst}"
+    say "Hot-air station temperature is ${byel}heater air temperature${rst}, not guaranteed joint temperature."
+    say "Real results depend on:"
+    say "  - nozzle size"
+    say "  - airflow"
+    say "  - distance"
+    say "  - board copper / plane size"
+    say "  - part mass"
+    say "  - whether you're using leaded / lead-free / low-temp solder"
+    say ""
+    say "Use these as ${bgre}starting points${rst}, then tune by observation."
+    say ''
+    say 'You can run with a specific topic, like:'
+    say "\$ ${mag}electronics-hotair-ref ${bmag}table${rst}"
+    say "${whi}Available topics:$rst ${bmag}theory solders tasks blind notes table$rst"
+}
+
+show_theory() {
+    section_header "HOW TO THINK ABOUT W/m·K PRACTICALLY"
+
+    say "${bwhi}Thermal conductivity k${rst} in W/m·K tells you how much heat can flow through a material."
+    say ""
+    say "Useful mental model:"
+    say "  ${bwhi}heat flow ≈ k × area × temperature_difference / thickness${rst}"
+    say ""
+    say "So:"
+    say "  - bigger ${bgre}k${rst}  => heat moves more easily"
+    say "  - bigger ${bgre}area${rst} => more heat flow"
+    say "  - bigger ${bred}thickness${rst} => less heat flow"
+    say "  - bigger ${bgre}ΔT${rst} => more heat flow"
+    say ""
+
+    sec "Typical materials"
+    say "  FR-4 PCB laminate:   ${byel}~0.25 to 0.40 W/m·K${rst}"
+    say "  Copper:              ${bgre}~400 W/m·K${rst}"
+    say ""
+    say "That means:"
+    say "  - ${bgre}Copper is a heat highway${rst}"
+    say "  - ${bred}FR-4 is a heat bottleneck${rst}"
+    say ""
+
+    sec "Why underside hot-air on a single-sided DIY board is hard"
+    say "If you're heating the blank underside of a single-sided board:"
+    say "  - there is ${bred}no copper path${rst} from underside to top pad"
+    say "  - heat mostly has to cross the board through FR-4"
+    say "  - that is slow and inefficient, especially over tiny pad area"
+    say ""
+
+    sec "Back-of-envelope examples"
+    say "Assume FR-4 k = 0.30 W/m·K and thickness = 1.6 mm = 0.0016 m"
+    say ""
+
+    say "1) Through a ${bwhi}1 cm²${rst} heated patch, with ΔT = 200 °C:"
+    say "   q ≈ 0.30 × 0.0001 × 200 / 0.0016"
+    say "   q ≈ ${byel}3.75 W${rst}"
+    say "   -> not huge, but workable if you heat enough area"
+    say ""
+
+    say "2) Through a ${bwhi}5 mm × 5 mm${rst} pad region, same ΔT:"
+    say "   area = 0.000025 m²"
+    say "   q ≈ 0.30 × 0.000025 × 200 / 0.0016"
+    say "   q ≈ ${byel}0.94 W${rst}"
+    say "   -> tiny pad-sized conduction path is weak"
+    say ""
+
+    say "3) Through a ${bwhi}2 mm × 2 mm${rst} tiny local region, same ΔT:"
+    say "   area = 0.000004 m²"
+    say "   q ≈ 0.30 × 0.000004 × 200 / 0.0016"
+    say "   q ≈ ${byel}0.15 W${rst}"
+    say "   -> now you're really fighting the material"
+    say ""
+
+    warn "Takeaway: for blind underside soldering, heat a broader area first, not just one tiny spot."
+}
+
+show_solders() {
+    section_header "COMMON SOLDER ALLOYS / TARGETS"
+    cat <<-EOT
+
+		${bwhi}These are the important anchor temperatures:${rst}
+
+		  ${bgre}Sn63/Pb37 (leaded eutectic)${rst}
+		    Melt point: ${byel}183 °C${rst}
+		    Friendly for hand/hot-air work.
+
+		  ${bgre}SAC305 / common lead-free${rst}
+		    Solidus/liquidus: ${byel}~217 to 220 °C${rst}
+		    Needs more station temperature / dwell.
+
+		  ${bgre}Low-temp Bi-based paste/alloy${rst}
+		    Often around: ${byel}~138 °C${rst}
+		    Great for fragile boards and blind underside experiments;
+		EOT
+
+    warn "You need the joint above melt, but the station setpoint usually has to be much higher."
+}
+
+show_tasks() {
+    section_header "COMMON HOT-AIR STARTING SETTINGS"
+
+    say "${bwhi}Airflow scale below assumes a generic 1-8 or 1-10 style station.${rst}"
+    say "If your station uses %, think ${byel}low / medium / high${rst}, not exact numbers."
+    say ""
+
+    sec "Small passives: 0402 / 0603 / 0805"
+    say "  Leaded:     ${bgre}280-320 °C${rst}, low airflow"
+    say "  Lead-free:  ${bgre}320-360 °C${rst}, low airflow"
+    say "  Notes: Sneak up on it. Too much airflow will blow parts away."
+    say ""
+
+    sec "Larger passives / SOT-23 / SOT-223"
+    say "  Leaded:     ${bgre}300-340 °C${rst}, low-med airflow"
+    say "  Lead-free:  ${bgre}340-380 °C${rst}, low-med airflow"
+    say "  Notes: Watch for one pad lagging if tied to copper."
+    say ""
+
+    sec "SOIC / TSSOP rework"
+    say "  Leaded:     ${bgre}300-340 °C${rst}, medium airflow"
+    say "  Lead-free:  ${bgre}340-380 °C${rst}, medium airflow"
+    say "  Notes: Preheat helps a lot. Use flux generously."
+    say ""
+
+    sec "QFN / DFN / exposed-pad packages"
+    say "  Leaded:     ${bgre}320-350 °C${rst}, medium airflow"
+    say "  Lead-free:  ${bgre}350-390 °C${rst}, medium airflow"
+    say "  Notes: Exposed pad and planes can soak heat hard."
+    say "         Often easier with bottom preheat."
+    say ""
+
+    sec "Connector / shield / chunky metal tabs"
+    say "  Leaded:     ${bgre}330-370 °C${rst}, medium-high airflow"
+    say "  Lead-free:  ${bgre}370-420 °C${rst}, medium-high airflow"
+    say "  Notes: Board and connector body can act like heatsinks."
+    say ""
+
+    sec "Removing parts without caring about reuse"
+    say "  Usually:    ${bgre}350-420 °C${rst}, medium-high airflow"
+    say "  Notes: Greatly depends on board mass. Shield nearby plastics."
+    say ""
+
+    sec "Installing low-temp paste parts"
+    say "  Often:      ${bgre}220-280 °C${rst}, low airflow"
+    say "  Notes: Very nice for fragile boards and weird thermal setups."
+    say ""
+
+    warn "Exact temperatures vary wildly across stations. A cheap station at 350 °C may behave like another at 310 °C or 390 °C."
+}
+
+show_blind() {
+    section_header "BLIND UNDERSIDE SMD SOLDERING: WHAT TO EXPECT"
+
+    say "${bwhi}For a single-sided etched PCB heated from the blank underside:${rst}"
+    say ""
+    say "  ${bred}Bad news:${rst}"
+    say "  - FR-4 is a poor through-thickness conductor"
+    say "  - no vias / no underside copper path to the top pad"
+    say "  - tiny pad areas conduct very little heat"
+    say "  - you can scorch the underside before the top reflows"
+    say ""
+
+    say "  ${bgre}Better news:${rst}"
+    say "  - small 0603 / 0805 / SOT-23 can sometimes be done"
+    say "  - low-temp paste helps a lot"
+    say "  - thinner boards help a lot"
+    say "  - broad preheat helps a lot"
+    say ""
+
+    sec "Reality by board thickness"
+    say "  ${bgre}0.8 mm board${rst}: possible for small parts with patience"
+    say "  ${byel}1.2-1.6 mm board${rst}: much harder; broad preheat strongly recommended"
+    say "  ${bred}2.0 mm+ board${rst}: generally a bad bet for blind underside work"
+    say ""
+
+    sec "Reasonable starting approach"
+    say "  1) Preheat a broad area from below"
+    say "  2) Keep airflow modest"
+    say "  3) Bring board close to solder melt range slowly"
+    say "  4) Watch top-side solder/part behavior if visible"
+    say "  5) Do not pry while hot unless you enjoy lifted pads"
+    say ""
+
+    sec "Blind underside starting guesses"
+    say "  For ${bwhi}small passives on 1.6 mm FR-4${rst}:"
+    say "    Leaded solder:    ${bgre}320-380 °C${rst}, low-med airflow, broad heat first"
+    say "    Lead-free solder: ${bgre}360-420 °C${rst}, low-med airflow, broad heat first"
+    say "    Low-temp paste:   ${bgre}240-300 °C${rst}, low airflow"
+    say ""
+    say "  These are ${bred}station setpoints only${rst}; the top pad may still lag badly."
+    say ""
+
+    sec "What usually works vs. what usually sucks"
+    say "  ${bgre}Sometimes workable:${rst}"
+    say "    - 0603 / 0805"
+    say "    - SOT-23"
+    say "    - tiny 2-pin parts"
+    say ""
+    say "  ${bred}Usually frustrating:${rst}"
+    say "    - SOIC on thick board"
+    say "    - anything with a thermal pad"
+    say "    - fine pitch ICs"
+    say "    - parts near plastics you can't afford to cook"
+    say ""
+
+    warn "If you can, use low-temp paste or add heat from the component side instead."
+}
+
+show_notes() {
+    section_header "PRACTICAL SHOP NOTES"
+
+    say "  - Use ${bgre}flux${rst}. Then use more flux."
+    say "  - Start with ${bgre}lower airflow${rst} than you think."
+    say "  - Large nozzle = gentler broad heating."
+    say "  - Small nozzle = more local intensity, easier to overshoot."
+    say "  - Distance matters a lot; 5 mm vs 20 mm is a huge difference."
+    say "  - Matte gray solder can mean 'not fully reflowed yet' or oxidized mess."
+    say "  - If one side is tied to copper, expect asymmetrical heating."
+    say "  - Preheating the whole board can reduce required peak setting a lot."
+    say "  - Cheap phenolic board is easier to damage than decent FR-4."
+    say "  - If a pad starts to lift, stop. You're not negotiating with it anymore."
+    say ""
+
+    sec "Good default habits"
+    say "  - Verify alloy if possible"
+    say "  - Test on scrap first"
+    say "  - Use Kapton/aluminum foil shields near plastic connectors"
+    say "  - Let boards cool before deciding whether a joint is bad"
+}
+
+show_quick_table() {
+    section_header "ONE-SCREEN CHEAT TABLE"
+
+    printf "%b\n" "${bwhi}Task                              Alloy        Temp         Airflow${rst}"
+    printf "%b\n" "${gra}------------------------------------------------------------------${rst}"
+    printf "%b\n" "0402/0603/0805                   Leaded       280-320 C    Low"
+    printf "%b\n" "0402/0603/0805                   Lead-free    320-360 C    Low"
+    printf "%b\n" "SOT-23 / small discretes         Leaded       300-340 C    Low-Med"
+    printf "%b\n" "SOT-23 / small discretes         Lead-free    340-380 C    Low-Med"
+    printf "%b\n" "SOIC / TSSOP                     Leaded       300-340 C    Med"
+    printf "%b\n" "SOIC / TSSOP                     Lead-free    340-380 C    Med"
+    printf "%b\n" "QFN / exposed pad                Leaded       320-350 C    Med"
+    printf "%b\n" "QFN / exposed pad                Lead-free    350-390 C    Med"
+    printf "%b\n" "Connectors / shields / tabs      Leaded       330-370 C    Med-High"
+    printf "%b\n" "Connectors / shields / tabs      Lead-free    370-420 C    Med-High"
+    printf "%b\n" "Low-temp paste install           Bi-based     220-280 C    Low"
+    printf "%b\n" "Blind underside, small parts     Leaded       320-380 C    Low-Med"
+    printf "%b\n" "Blind underside, small parts     Lead-free    360-420 C    Low-Med"
+    printf "%b\n" "${gra}------------------------------------------------------------------${rst}"
+    say ""
+    mut "Remember: these are station setpoint starting ranges, not guaranteed joint temperatures."
+}
+
+usage() {
+    cat <<'EOF'
+Usage:
+  ./hotair_ref.sh            # full output
+  ./hotair_ref.sh theory
+  ./hotair_ref.sh solders
+  ./hotair_ref.sh tasks
+  ./hotair_ref.sh blind
+  ./hotair_ref.sh notes
+  ./hotair_ref.sh table
+EOF
+}
+
+main() {
+    case "${1:-all}" in
+        all|"")
+            show_intro
+            show_quick_table
+            show_theory
+            show_solders
+            show_tasks
+            show_blind
+            show_notes
+            ;;
+        theory)  show_theory ;;
+        solders) show_solders ;;
+        tasks)   show_tasks ;;
+        blind)   show_blind ;;
+        notes)   show_notes ;;
+        table)   show_quick_table ;;
+        -h|--help|help) usage ;;
+        *)
+            warn "Unknown section: $1"
+            usage
+            exit 1
+            ;;
+    esac
+}
+
+if [[ -t 1 ]]; then
+	main "$@" | less -FRiX
+else
+	main "$@"
+fi
+
