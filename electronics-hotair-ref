@@ -17,9 +17,14 @@
 #   ./hotair_ref.sh solders
 #   ./hotair_ref.sh notes
 
+# This gets the physical file and its REAL NAME:
+realdir=$(dirname "$(readlink -f "$0")")
+ansish="$realdir/ansi.sh"
+if [[ -f "$ansish" ]]; then
+	. "$ansish" # Load color codes
+fi
+
 # shellcheck disable=SC1091
-. ansi.sh
-#which ansi.sh && . ansi.sh # Colors
 
 : "${red:=}";  : "${gre:=}";  : "${gra:=}";  : "${yel:=}";  : "${whi:=}"
 : "${bred:=}"; : "${bgre:=}"; : "${bgra:=}"; : "${byel:=}"; : "${bwhi:=}"
