@@ -41,7 +41,7 @@ sub syms_to_ascii {
 }
 
 sub str_help { # String of full explanation
-	my $sect = "$bgblu$whi";  # Section headings
+	my $sect = "$bgblu$yel";  # Section headings
 	my $nums = "$yel";        # Numbers
 	my $sym = "$bcya";        # Symbols
 	my $equ = "$whi";         # Equations
@@ -51,9 +51,9 @@ sub str_help { # String of full explanation
 		${sect} The Planck-Einstein Relation ${rst}
 		The energy ($equ$sym_e$rst) of a photon is given by the Planck-Einstein relation:
 		   $equ$sym_e = $sym_h * $sym_nu$rst
-		where $equ$sym_h$rst is Planck's constant (${nums}6.626 x 10^-34 ${unit}Js$rst)
+		where $equ$sym_h$rst is Planck's constant (${nums}6.626 x 10^-34 ${unit}Js$rst), ie. Joule*seconds
 		and $equ$sym_nu$rst is the frequency of the photon.
-
+		(Note that $sym_e=$sym_h*$sym_nu is commonly written equivalently as E=hf)
 		The frequency ($sym$sym_nu$rst) can be related to the wavelength ($sym$sym_lambda$rst)
 		by the speed of light ($sym$sym_c$rst): $equ$sym_nu = $sym_c / $sym_lambda$rst
 
